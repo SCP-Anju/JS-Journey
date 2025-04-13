@@ -123,11 +123,63 @@ const luftansia = {
   book(flightNum, name, seat) {
     this.bookings.push({
       flight: this.iataCode,
-      flightNum,
+      flightNum: this.iataCode + flightNum,
       name,
       seat,
     });
   },
 };
-luftansia.book("LH346", "Anju", "A26");
+luftansia.book("346", "Anju", "A26");
+
+const euroWings = {
+  airline: "EuroWings",
+  iataCode: "EW",
+  bookings: [],
+};
+
+//get the book function
+const bookFlight = luftansia.book;
+
+//call points to an object
+bookFlight.call(euroWings, 32, "Anju", "A12");
+
+//apply method - accepts array of data as a second argument
+const flightData = [154, "Jenny", "A32"];
+bookFlight.apply(euroWings, flightData);
+
+//same as apply method
+//bookFlight.call(euroWings, ...flightData);
+
+//the bind method
+const bookLH = bookFlight.bind(luftansia);
+const bookEW = bookFlight.bind(euroWings);
+
+bookEW(32, "steven", "M32");
+bookLH(34, "steven", "M32");
+
+//default parameter and a bind (partial application)
+const bookEW43 = bookFlight.bind(euroWings, 43);
+bookEW43("Jerry", "A32");
+
 console.log(luftansia);
+console.log(euroWings);
+
+//partial application
+const addtax = (rate, value) => value + value * rate;
+console.log(addtax(0.1, 200));
+
+const addVAT = addtax.bind(null, 0.23);
+console.log(addVAT(300));
+
+//with event listner
+luftansia.numPlane = 300;
+luftansia.addPlane = function () {
+  this.numPlane++;
+  console.log(this.numPlane);
+};
+
+document
+  .querySelector(".buy")
+  .addEventListener("click", luftansia.addPlane.bind(luftansia));
+
+//exec
