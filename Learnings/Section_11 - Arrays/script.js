@@ -134,6 +134,7 @@ const allBalance = accounts.map((account) => account.movements).flat();
 console.log(allBalance.reduce((acc, value) => acc + value, 0));
 
 const allBalanceflatMap = accounts.flatMap((account) => account.movements);
+console.log(allBalanceflatMap);
 console.log(allBalanceflatMap.reduce((acc, value) => acc + value, 0));
 
 // Coding Challenge #4
@@ -239,3 +240,35 @@ const averageWeightBreed = breeds
     breed.averageWeight > acc.averageWeight ? breed : acc
   );
 console.log(averageWeightBreed.averageWeight);
+
+//array groupings
+
+const groupMovements = Object.groupBy(movements, (mov) =>
+  mov < 0 ? "widthrawals" : "deposits"
+);
+console.log(groupMovements);
+
+//array fillings
+
+console.log([1, 2, 3, 4, 5]);
+console.log(new Array([1, 2, 3, 4, 5]));
+
+//empty array specified length
+const x = new Array(6);
+console.log(x);
+
+//fill the array with value of 1
+x.fill(1);
+console.log(x);
+
+//value - start - end
+x.fill(2, 2, 5);
+console.log(x);
+
+//array from
+const arrayValues = Array.from({ length: 10 }, (current, index) => index + 1);
+
+console.log(arrayValues);
+
+//Non-destructve alternatives: toReversed, toSorted, toSplice
+//array.with(index, value);
