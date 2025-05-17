@@ -49,7 +49,7 @@ console.log(arr[arr.length - 1]);
 console.log(arr.splice(-1)[0]);
 
 //with at
-console.log(arr.at(-1));
+console.log(arr.at(0));
 
 //forEach Method
 
@@ -68,6 +68,8 @@ const currencies = new Map([
   ["EUR", "Euro"],
   ["GBP", "Pound sterling"],
 ]);
+
+console.log(currencies);
 
 const checkDogs = function (julia_Data, kate_Data) {
   const copyJulia = julia_Data.slice(1, -2);
@@ -127,10 +129,10 @@ const account4 = {
 const accounts = [account1, account2, account3, account4];
 
 const num = [1, 2, 3, [2, 3, 4, [4, 6, 7, 8]], 7, [4, 5]];
-console.log(num.flat(2));
+console.log(num.flat(Infinity));
 
 //calculate all the balance
-const allBalance = accounts.map((account) => account.movements).flat();
+const allBalance = accounts.map((account) => account.movements);
 console.log(allBalance.reduce((acc, value) => acc + value, 0));
 
 const allBalanceflatMap = accounts.flatMap((account) => account.movements);
@@ -242,14 +244,12 @@ const averageWeightBreed = breeds
 console.log(averageWeightBreed.averageWeight);
 
 //array groupings
-
 const groupMovements = Object.groupBy(movements, (mov) =>
   mov < 0 ? "widthrawals" : "deposits"
 );
 console.log(groupMovements);
 
 //array fillings
-
 console.log([1, 2, 3, 4, 5]);
 console.log(new Array([1, 2, 3, 4, 5]));
 
@@ -272,3 +272,45 @@ console.log(arrayValues);
 
 //Non-destructve alternatives: toReversed, toSorted, toSplice
 //array.with(index, value);
+
+//array method practice
+
+const bankDepositSum = accounts
+  .flatMap((acc) => acc.movements)
+  .filter((mov) => mov > 0)
+  .reduce((acc, mov) => acc + mov, 0);
+console.log(bankDepositSum);
+
+const countDeposit = accounts
+  .flatMap((acc) => acc.movements)
+  .filter((mov) => mov >= 1000).length;
+console.log(countDeposit);
+
+const countDeposit2 = accounts
+  .flatMap((acc) => acc.movements)
+  .reduce((acc, mov) => (mov >= 1000 ? acc + 1 : acc), 0);
+console.log(countDeposit2);
+
+const sumAllmov = accounts
+  .flatMap((acc) => acc.movements)
+  .reduce(
+    (sum, mov) => {
+      mov > 0 ? (sum.deposit += mov) : (sum.withdraw += mov);
+      return sum;
+    },
+    { deposit: 0, withdraw: 0 }
+  );
+
+console.log(sumAllmov);
+
+//this is a nice title - This Is a Nice Title
+const textTransform = (text) => {
+  const strArray = text.toLowerCase().split(" ");
+  const transformed = strArray.map((text) =>
+    text.length <= 1 ? text : text[0].toUpperCase() + text.slice(1)
+  );
+  return transformed.join(" ");
+};
+
+const text = textTransform("this is a nice title");
+console.log(text);
