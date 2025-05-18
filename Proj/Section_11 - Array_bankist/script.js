@@ -80,6 +80,7 @@ let states = {
   currentUser: null,
   summary: null,
 };
+
 let sorted = false;
 
 //calculateCurrentBalance
