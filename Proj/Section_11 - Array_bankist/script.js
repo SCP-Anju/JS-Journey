@@ -7,9 +7,22 @@
 // Data
 const account1 = {
   owner: "Jonas Schmedtmann",
-  movements: [200, 450, -400, 3000, -650, -130, 70, 1300],
+  movements: [200, 455.23, -306.5, 25000, -642.21, -133.9, 79.97, 1300],
   interestRate: 1.2, // %
   pin: 1111,
+
+  movementsDates: [
+    "2019-11-18T21:31:17.178Z",
+    "2019-12-23T07:42:02.383Z",
+    "2020-01-28T09:15:04.904Z",
+    "2020-04-01T10:17:24.185Z",
+    "2020-05-08T14:11:59.604Z",
+    "2020-05-27T17:01:17.194Z",
+    "2020-07-11T23:36:17.929Z",
+    "2025-05-22T10:51:36.790Z",
+  ],
+  currency: "EUR",
+  locale: "en-PH", // de-DE
 };
 
 const account2 = {
@@ -17,23 +30,22 @@ const account2 = {
   movements: [5000, 3400, -150, -790, -3210, -1000, 8500, -30],
   interestRate: 1.5,
   pin: 2222,
+
+  movementsDates: [
+    "2019-11-01T13:15:33.035Z",
+    "2019-11-30T09:48:16.867Z",
+    "2019-12-25T06:04:23.907Z",
+    "2020-01-25T14:18:46.235Z",
+    "2020-02-05T16:33:06.386Z",
+    "2020-04-10T14:43:26.374Z",
+    "2020-06-25T18:49:59.371Z",
+    "2020-07-26T12:01:20.894Z",
+  ],
+  currency: "USD",
+  locale: "en-US",
 };
 
-const account3 = {
-  owner: "Steven Thomas Williams",
-  movements: [200, -200, 340, -300, -20, 50, 400, -460],
-  interestRate: 0.7,
-  pin: 3333,
-};
-
-const account4 = {
-  owner: "Sarah Smith",
-  movements: [430, 1000, 700, 50, 90],
-  interestRate: 1,
-  pin: 4444,
-};
-
-const accounts = [account1, account2, account3, account4];
+const accounts = [account1, account2];
 
 // Elements
 const labelWelcome = document.querySelector(".welcome");
@@ -77,8 +89,17 @@ createUsername(accounts);
 
 //current state
 let states = {
-  currentUser: null,
+  currentUser: account1,
   summary: null,
+  date: null,
+  getMethod: function (inputDate) {
+    const date = new Date(inputDate);
+    return {
+      year: date.getFullYear(),
+      month: date.getMonth() + 1,
+      day: date.getDate(),
+    };
+  },
 };
 
 let sorted = false;
@@ -105,16 +126,40 @@ const calcSummary = (currentUser) => {
   return { balance, withdrawals, income, interest };
 };
 
+const daysPassed = (startDate, endDate) => {
+  const start = new Date(startDate.year, startDate.month - 1, startDate.day);
+  const end = new Date(endDate.year, endDate.month - 1, endDate.day);
+
+  const MS_PERDAY = 1000 * 60 * 60 * 24;
+  const days = Math.abs((end - start) / MS_PERDAY);
+
+  if (days === 0) return "Today";
+  if (days === 1) return "Yesterday";
+  if (days <= 7) return `${days} days ago`;
+
+  return `${endDate.month - 1}/${endDate.day}/${endDate.year}`;
+};
+
 //showMovements
 const showMovements = (currentUser, sort = false) => {
   containerMovements.innerHTML = "";
-  let movement = sort
-    ? currentUser.movements.slice().sort((a, b) => a - b)
-    : currentUser.movements;
 
-  console.log(movement);
+  const combinedMovDates = currentUser.movements.map((mov, index) => {
+    return {
+      mov,
+      date: currentUser.movementsDates[index],
+    };
+  });
+
+  console.log(combinedMovDates);
+
+  let movement = sort
+    ? combinedMovDates.toSorted((a, b) => a.mov - b.mov)
+    : combinedMovDates;
+
   movement.forEach((e, index) => {
-    const type = e > 0 ? "deposit" : "withdrawal";
+    const type = e.mov > 0 ? "deposit" : "withdrawal";
+    //const text_days = daysPassed(states.date, states.calcDate(e.date));
 
     const perItem = document.createElement("div");
     perItem.classList.add("movements__row");
@@ -123,11 +168,16 @@ const showMovements = (currentUser, sort = false) => {
     typeDiv.classList.add("movements__type", `movements__type--${type}`);
     typeDiv.textContent = `${index + 1} ${type}`;
 
+    const dateDiv = document.createElement("div");
+    dateDiv.classList.add("movements__date");
+    dateDiv.textContent = "";
+
     const valueDiv = document.createElement("div");
     valueDiv.classList.add("movements__value");
-    valueDiv.textContent = `${e}`;
+    valueDiv.textContent = `${e.mov.toFixed(2)}`;
 
     perItem.appendChild(typeDiv);
+    perItem.appendChild(dateDiv);
     perItem.appendChild(valueDiv);
 
     containerMovements.prepend(perItem);
@@ -135,11 +185,12 @@ const showMovements = (currentUser, sort = false) => {
 };
 
 //display UI
-const displayValues = (summary) => {
-  labelBalance.textContent = summary.balance;
-  labelSumIn.textContent = summary.income;
-  labelSumOut.textContent = summary.withdrawals;
-  labelSumInterest.textContent = summary.interest;
+const displayValues = (summary, text) => {
+  labelDate.textContent = text;
+  labelBalance.textContent = summary.balance.toFixed(2);
+  labelSumIn.textContent = summary.income.toFixed(2);
+  labelSumOut.textContent = summary.withdrawals.toFixed(2);
+  labelSumInterest.textContent = summary.interest.toFixed(2);
 };
 
 //transfer to another account
@@ -188,10 +239,19 @@ function showAccountDetails(currentUser) {
   }`;
   inputLoginPin.value = inputLoginUsername.value = "";
 
+  states.date = new Date();
+  const textLoginDate = new Intl.DateTimeFormat(currentUser.locale, {
+    hour: "numeric",
+    minute: "numeric",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(states.date);
+
   //calculate current balances
   states.summary = calcSummary(currentUser);
   showMovements(currentUser);
-  displayValues(states.summary);
+  displayValues(states.summary, textLoginDate);
 }
 
 //account close
@@ -231,7 +291,8 @@ const accountClose = (e) => {
 const loan = (e) => {
   e.preventDefault();
   const currentUser = states.currentUser;
-  const loanAmount = Number(inputLoanAmount.value);
+  const loanAmount = Math.floor(Number(inputLoanAmount.value));
+  const getLoanDate = new Date();
 
   if (!loanAmount || loanAmount <= 0) {
     alert("Invalid Amount!");
@@ -244,6 +305,7 @@ const loan = (e) => {
   }
 
   currentUser.movements.push(loanAmount);
+  currentUser.movementsDates.push(getLoanDate.toISOString());
 
   //calculate current balances
   states.summary = calcSummary(currentUser);
@@ -271,6 +333,7 @@ const logIn = (e) => {
     alert("Invalid Credentials!");
     return;
   }
+  console.log(states.currentUser);
   showAccountDetails(states.currentUser);
 };
 
@@ -282,3 +345,5 @@ btnSort.addEventListener("click", () => {
   sorted = !sorted;
   showMovements(states.currentUser, sorted);
 });
+
+showAccountDetails(states.currentUser);
